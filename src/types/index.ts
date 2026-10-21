@@ -1,161 +1,265 @@
-// ============================================================================
-// RESERVA FLOW — Complete TypeScript Domain Types
-// ============================================================================
+export type Language = 'en' | 'es';
+export type Currency = 'MXN' | 'USD';
 
-export type BookingStatus = 'confirmed' | 'cancelled' | 'in_progress' | 'awaiting_review' | 'blocked';
-export type PlatformChannel = 'Direct' | 'Booking.com' | 'Airbnb' | 'OpenTable' | 'Resy' | 'Agoda' | 'Traveloka';
-
-export interface Booking {
+export interface Guest {
   id: string;
-  bookingNumber: string;
+  name: string;
+  roomNumber: string;
+  reservationRef: string;
+  stayStatus: 'in-house' | 'arriving' | 'departed' | 'vip';
+  arrivalDate: string;
+  departureDate: string;
+  folioBalanceMxn: number;
+  email: string;
+  phone: string;
+  vipTier?: 'Founders Circle' | 'Ocean Villa Suite' | 'Standard Guest';
+}
+
+export interface Outlet {
+  id: string;
+  name: string;
+  nameEs: string;
+  type: 'restaurant' | 'bar' | 'pool_beach' | 'boutique';
+  status: 'open' | 'closed';
+  terminalName: string;
+  activeOrdersCount: number;
+  description: string;
+  descriptionEs: string;
+}
+
+export type ProductCategory = 'food' | 'cocktails' | 'wine_beverages' | 'desserts' | 'spa_retail' | 'boutique';
+
+export interface Product {
+  id: string;
+  outletId: string;
+  category: ProductCategory;
+  name: string;
+  nameEs: string;
+  priceMxn: number;
+  description: string;
+  descriptionEs: string;
+  image?: string;
+  isAvailable: boolean;
+  preparationStation?: 'kitchen' | 'bar' | 'boutique';
+}
+
+export interface OrderModifier {
+  id: string;
+  name: string;
+  nameEs: string;
+  priceMxn: number;
+}
+
+export interface OrderLine {
+  id: string;
+  productId: string;
+  productName: string;
+  productNameEs?: string;
+  quantity: number;
+  unitPriceMxn: number;
+  selectedModifiers: OrderModifier[];
+  notes?: string;
+  subtotalMxn: number;
+}
+
+export type OrderStatus = 'new' | 'in_preparation' | 'ready' | 'served' | 'paid';
+export type PaymentMethodType = 'cash' | 'digital' | 'room_charge';
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  outletId: string;
+  outletName: string;
+  tableNumber?: string;
+  serverName: string;
+  lines: OrderLine[];
+  subtotalMxn: number;
+  taxMxn: number; // 16% IVA
+  serviceChargeMxn: number;
+  tipMxn: number;
+  totalMxn: number;
+  status: OrderStatus;
+  paymentMethod?: PaymentMethodType;
+  guestId?: string;
+  guestName?: string;
+  roomNumber?: string;
+  createdAt: string;
+  elapsedMinutes?: number;
+  kitchenNotes?: string;
+  splitBills?: SplitBill[];
+}
+
+export interface SplitBill {
+  id: string;
+  title: string;
+  lines: OrderLine[];
+  totalMxn: number;
+  isPaid: boolean;
+  paymentMethod?: PaymentMethodType;
+}
+
+export type TableStatus = 'available' | 'seated' | 'ordering' | 'served' | 'bill_requested';
+
+export interface RestaurantTable {
+  id: string;
+  number: string;
+  capacity: number;
+  status: TableStatus;
+  currentOrderId?: string;
+  serverName: string;
+  guestsCount: number;
+  totalAmountMxn: number;
+  section: 'Terrace Ocean View' | 'Pergola Garden' | 'Bar Lounge';
+}
+
+export interface SpaTreatmentAddOn {
+  id: string;
+  name: string;
+  nameEs: string;
+  priceMxn: number;
+  durationMinutes: number;
+}
+
+export interface SpaTreatment {
+  id: string;
+  name: string;
+  nameEs: string;
+  durationMinutes: number;
+  priceMxn: number;
+  description: string;
+  descriptionEs: string;
+  category: 'Massage' | 'Facial' | 'Couples' | 'Recovery';
+  addOns: SpaTreatmentAddOn[];
+}
+
+export interface Therapist {
+  id: string;
+  name: string;
+  specialties: string[];
+  isAvailable: boolean;
+  workingHours: { start: string; end: string };
+}
+
+export interface TreatmentRoom {
+  id: string;
+  name: string;
+  type: 'standard' | 'couples' | 'ocean_cabin';
+  isAvailable: boolean;
+}
+
+export type SpaBookingStatus = 'pending_deposit' | 'confirmed' | 'checked_in' | 'in_treatment' | 'completed' | 'cancelled';
+
+export interface SpaBooking {
+  id: string;
+  bookingRef: string;
+  guestId: string;
   guestName: string;
   guestEmail: string;
   guestPhone: string;
-  unit: string;
-  platform: PlatformChannel;
-  status: BookingStatus;
-  statusLabel: string; // e.g. "Bestätigt", "Storniert", "Booked"
-  bookedDate: string; // YYYY-MM-DD
-  checkInDate: string; // YYYY-MM-DD
-  checkOutDate: string; // YYYY-MM-DD
-  nights: number;
-  guestsCount: number;
-  totalAmount: number; // in EUR/USD
-  commissionAmount: number;
-  cleaningFee: number;
+  treatmentId: string;
+  treatmentName: string;
+  durationMinutes: number;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  therapistId: string;
+  therapistName: string;
+  roomId: string;
+  roomName: string;
+  addOnIds: string[];
+  totalPriceMxn: number;
+  depositPaidMxn: number;
+  remainingBalanceMxn: number;
+  status: SpaBookingStatus;
+  depositPaymentId?: string;
+  folioPostingId?: string;
+  posOrderId?: string;
   notes?: string;
-  automatedWorkflowId?: string;
-  sourceSessionId?: string;
 }
 
-export type StepStatus = 'completed' | 'in_progress' | 'awaiting_review' | 'blocked' | 'pending';
+export type FolioPostingStatus = 'queued' | 'posting' | 'posted' | 'failed' | 'requires_review';
 
-export interface WorkflowStep {
+export interface FolioPosting {
   id: string;
-  title: string;
-  agentName: string;
-  agentRole?: string;
-  timestamp?: string;
-  status: StepStatus;
-  statusLabel: string;
-  detail?: string;
-  durationMs?: number;
+  postingRef: string;
+  guestId: string;
+  guestName: string;
+  roomNumber: string;
+  sourceOutlet: string;
+  transactionRef: string;
+  amountMxn: number;
+  currency: Currency;
+  status: FolioPostingStatus;
+  lastAttempt: string;
+  simulatedFailureReason?: string;
+  retryCount: number;
+  idempotencyKey: string;
+  simulatedPmsAmountMxn?: number; // for reconciliation testing
 }
 
-export interface Workflow {
+export type PaymentSource = 'spa_deposit' | 'public_spa_booking' | 'pos_digital' | 'payment_link';
+export type PaymentStatus = 'succeeded' | 'pending' | 'failed' | 'refunded';
+
+export interface Payment {
   id: string;
-  name: string;
-  description: string;
-  channel: PlatformChannel;
-  triggerType: 'webhook' | 'schedule' | 'overbooking_alert' | 'waitlist_event' | 'manual';
-  executionStrategy: 'headless_browser' | 'direct_api' | 'hybrid';
-  isActive: boolean;
-  priority: 'critical' | 'high' | 'normal';
-  successRate: number; // e.g. 99.4
-  totalExecutions: number;
-  avgDurationSec: number;
+  paymentRef: string;
+  guestId?: string;
+  guestName: string;
+  source: PaymentSource;
+  amountMxn: number;
+  currency: Currency;
+  paymentMethod: 'card' | 'apple_pay' | 'room_charge' | 'cash';
+  status: PaymentStatus;
+  providerRef: string; // e.g. ch_3M5qJ...
   createdAt: string;
-  steps: WorkflowStep[];
+  bookingId?: string;
+  orderId?: string;
+  reconciliationStatus: 'matched' | 'mismatch' | 'pending';
+  mismatchReason?: string;
 }
 
-export interface BrowserWorker {
+export type InvoiceStatus = 'draft' | 'awaiting_validation' | 'simulated_timbrado' | 'issued' | 'failed';
+
+export interface Invoice {
   id: string;
-  workerName: string;
-  status: 'idle' | 'booking' | 'solving_captcha' | 'reconnecting' | 'error';
-  ipAddress: string;
-  proxyLocation: string;
-  proxyType: 'Residential ISP' | 'Datacenter' | 'Mobile 5G';
-  latencyMs: number;
-  targetPlatform: PlatformChannel;
-  activeTaskId?: string;
-  captchaBypassedToday: number;
-  cpuUsage: number;
-  memoryUsage: number;
+  invoiceNumber: string;
+  sourceRef: string; // POS or Spa ref
+  guestName: string;
+  rfc: string;
+  legalName: string;
+  postalCode: string;
+  taxRegime: string; // e.g. 601, 605, 612
+  cfdiUse: string; // e.g. G03 - Gastos en general
+  paymentMethod: 'PUE' | 'PPD'; // Pago en una sola exhibición / Pago en parcialidades o diferido
+  paymentForm: '01' | '04' | '28'; // 01-Efectivo, 04-Tarjeta de crédito, 28-Tarjeta de débito
+  subtotalMxn: number;
+  ivaMxn: number; // 16% IVA
+  totalMxn: number;
+  currency: Currency;
+  status: InvoiceStatus;
+  createdAt: string;
+  simulatedUuid?: string;
+  validationErrors?: string[];
 }
 
-export type SimulationScenarioId = 'flash_booking' | 'channel_conflict' | 'antibot_challenge' | 'cancellation_recovery';
-
-export interface SimulationScenario {
-  id: SimulationScenarioId;
-  title: string;
-  shortDescription: string;
-  category: 'Speed & Yield' | 'Conflict Resolution' | 'Security & Anti-Bot' | 'Occupancy Recovery';
-  estimatedDurationMs: number;
-  steps: {
-    stepIndex: number;
-    title: string;
-    agentName: string;
-    status: StepStatus;
-    statusLabel: string;
-    logMessage: string;
-    delayMs: number;
-    impactSummary: string;
-  }[];
-  expectedOutcome: {
-    bookingStatusChange?: { bookingId: string; newStatus: BookingStatus };
-    newBookingCreated?: Partial<Booking>;
-    metricChanges: {
-      revenueDelta?: number;
-      occupancyDelta?: number;
-      tasksDelta?: number;
-    };
-    alertGenerated?: string;
-  };
+export interface DemoSettings {
+  exchangeRateUsdMxn: number; // e.g. 18.5
+  defaultCurrency: Currency;
+  serviceChargePercent: number; // e.g. 10%
+  taxRatePercent: number; // 16% IVA
+  spaCleanupBufferMinutes: number; // e.g. 15
+  language: Language;
+  businessDate: string; // "2026-10-21"
 }
 
-export interface ActivityEvent {
+export interface ActivityFeedItem {
   id: string;
   timestamp: string;
+  type: 'pos' | 'spa' | 'folio' | 'payment' | 'invoice';
   title: string;
-  category: 'workflow' | 'booking' | 'security' | 'conflict' | 'system';
-  actor: string;
-  actorType: 'bot' | 'human' | 'channel_manager' | 'security_guard';
-  status: 'success' | 'warning' | 'error' | 'info';
-  details: string;
-  meta?: Record<string, any>;
-}
-
-export interface DashboardMetrics {
-  occupancyRate: number; // e.g. 87
-  occupancyRateDelta: string; // "+5 vs last week"
-  checkInsToday: number; // e.g. 24
-  checkInsProcessed: number; // 12
-  checkInsPending: number; // 12
-  revenueToday: number; // e.g. 5820
-  revenueTodayDelta: string; // "+12% vs yesterday"
-  activeTasks: number; // 7
-  tasksOverdue: number; // 3
-  tasksCompleted: number; // 4
-  totalYearRevenue: number; // 145450
-  totalBookingsCount: number; // 574
-  cancelledCount: number; // 117
-  totalNights: number; // 1735
-  totalCommissionsSaved: number; // 68201.76
-  totalCleaningFees: number; // 24533.00
-  platformDistribution: {
-    direct: number;
-    bookingCom: number;
-    agoda: number;
-    traveloka: number;
-    airbnb: number;
-  };
-}
-
-export interface TaskItem {
-  id: string;
-  title: string;
-  dueDate: string;
-  roomUnit: string;
-  assignee: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-}
-
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  timestamp: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  isRead: boolean;
+  titleEs: string;
+  description: string;
+  descriptionEs: string;
+  status?: string;
+  linkRoute?: string;
 }

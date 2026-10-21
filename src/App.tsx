@@ -1,64 +1,68 @@
-import React, { useEffect } from 'react';
-import { useDemo } from './context/DemoContext';
-import { LoadingScreen } from './components/common/LoadingScreen';
-import { LandingPage } from './pages/LandingPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { WorkflowsPage } from './pages/WorkflowsPage';
-import { BookingsPage } from './pages/BookingsPage';
-import { SessionsPage } from './pages/SessionsPage';
-import { SimulatorPage } from './pages/SimulatorPage';
-import { ActivityPage } from './pages/ActivityPage';
-import { SettingsPage } from './pages/SettingsPage';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
+import { LoadingScreen } from './components/layout/LoadingScreen';
+import { ToastContainer } from './components/layout/ToastContainer';
+import { LandingPage } from './pages/public/LandingPage';
+import { PublicSpaBookingPage } from './pages/public/PublicSpaBookingPage';
+import { BookingConfirmationPage } from './pages/public/BookingConfirmationPage';
+import { OperationsLayout } from './components/layout/OperationsLayout';
+import { OperationsOverviewPage } from './pages/app/OperationsOverviewPage';
+import { POSPage } from './pages/app/POSPage';
+import { RestaurantFloorPlanPage } from './pages/app/RestaurantFloorPlanPage';
+import { SpaManagementPage } from './pages/app/SpaManagementPage';
+import { GuestsPage } from './pages/app/GuestsPage';
+import { FoliosPage } from './pages/app/FoliosPage';
+import { PaymentsPage } from './pages/app/PaymentsPage';
+import { InvoicingPage } from './pages/app/InvoicingPage';
+import { ReportsPage } from './pages/app/ReportsPage';
+import { SettingsPage } from './pages/app/SettingsPage';
 
-export const App: React.FC = () => {
-  const { state, dispatch, navigate } = useDemo();
+export function App() {
+  const [initialLoading, setInitialLoading] = useState(() => {
+    // Only play loading screen on the very first page mount in this session
+    const hasLoaded = sessionStorage.getItem('casa_marea_session_loaded');
+    return !hasLoaded;
+  });
 
-  // Listen to browser navigation popstate
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path && path !== state.currentRoute) {
-        dispatch({ type: 'NAVIGATE', payload: path });
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [state.currentRoute, dispatch]);
-
-  // Update browser URL on internal navigate
-  useEffect(() => {
-    if (window.location.pathname !== state.currentRoute) {
-      window.history.pushState(null, '', state.currentRoute);
-    }
-  }, [state.currentRoute]);
-
-  // Render initial loading screen once per session
-  if (!state.hasSeenLoadingScreen) {
-    return <LoadingScreen onFinish={() => dispatch({ type: 'DISMISS_LOADING_SCREEN' })} />;
-  }
-
-  // Route switcher
-  const renderRoute = () => {
-    switch (state.currentRoute) {
-      case '/dashboard':
-        return <DashboardPage />;
-      case '/workflows':
-        return <WorkflowsPage />;
-      case '/bookings':
-        return <BookingsPage />;
-      case '/sessions':
-        return <SessionsPage />;
-      case '/simulator':
-        return <SimulatorPage />;
-      case '/activity':
-        return <ActivityPage />;
-      case '/settings':
-        return <SettingsPage />;
-      case '/':
-      default:
-        return <LandingPage />;
-    }
+  const handleLoadingComplete = () => {
+    sessionStorage.setItem('casa_marea_session_loaded', 'true');
+    setInitialLoading(false);
   };
 
-  return <>{renderRoute()}</>;
-};
+  return (
+    <AppProvider>
+      {initialLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
+
+      <BrowserRouter>
+        <Routes>
+          {/* Public Experience */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/book-spa" element={<PublicSpaBookingPage />} />
+          <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+
+          {/* Operations Experience */}
+          <Route path="/app" element={<OperationsLayout />}>
+            <Route index element={<OperationsOverviewPage />} />
+            <Route path="pos" element={<POSPage />} />
+            <Route path="restaurant" element={<RestaurantFloorPlanPage />} />
+            <Route path="spa" element={<SpaManagementPage />} />
+            <Route path="guests" element={<GuestsPage />} />
+            <Route path="folios" element={<FoliosPage />} />
+            <Route path="payments" element={<PaymentsPage />} />
+            <Route path="invoicing" element={<InvoicingPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+
+      <ToastContainer />
+    </AppProvider>
+  );
+}
+
+export default App;

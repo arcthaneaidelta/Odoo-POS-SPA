@@ -1,72 +1,96 @@
-# RESERVA FLOW — Autonomous Reservation Orchestration SaaS
+# CASA MAREA
+## Luxury Resort Operations, POS & Spa Management Experience
+**Baja California Sur, Mexico** · *Odoo Enterprise-Inspired Unified Hospitality Platform*
 
-> Next-generation multi-channel booking orchestration, automated browser reservation bots, zero-collision channel conflict reconciliation, and intelligent guest yield management.
-
-![RESERVA FLOW Preview](public/images/hero_ambient_landscape.jpg)
-
-## Overview
-
-**RESERVA FLOW** is a high-fidelity frontend prototype built for luxury boutique hotels, private alpine chalets, Michelin dining venues, and hospitality management groups.
-
-The platform demonstrates autonomous reservation acquisition, cross-channel arbitration, biometric anti-bot bypass, and dynamic waitlist recovery within a unified interface.
+[![Netlify Status](https://api.netlify.com/api/v1/badges/casamarea/deploy-status)](https://app.netlify.com/)
 
 ---
 
-## Key Features
+## 1. Product Overview
 
-1. **Autonomous Headless Reservation Workers**:
-   - Deploys stealth Chromium browser sessions with humanized bezier cursor curves and residential ISP proxies (Frankfurt, Zurich, London, Tokyo).
-2. **Zero-Collision Channel Shield**:
-   - Resolves simultaneous booking attempts between Airbnb, Booking.com, and Direct engines in 320ms based on net margin arbitration.
-3. **Biometric Anti-Bot Turnstile Solver**:
-   - Automated Cloudflare Turnstile, DataDome, and PerimeterX clearance with 99.4% success rate.
-4. **Dynamic Waitlist Yield Recovery**:
-   - Detects OTA cancellations (Stornierung) and immediately backfills opened inventory with pre-authorized VIP guests in 1.2s.
-5. **Deterministic Simulation Sandbox**:
-   - Centrally drives 4 real-time scenarios synchronized live across Dashboard KPIs, Bookings Table, and Session telemetry.
-6. **Live Ambient Cinema Hero**:
-   - Classical alpine landscape visual with Ken Burns slow panning, real-time 60fps sunlight dust particle physics, and god-ray sweeps.
+**CASA MAREA** is an interactive, high-fidelity luxury resort operations platform designed for hospitality decision-makers. It demonstrates an integrated operational ecosystem connecting:
+
+- **Point of Sale (POS):** 4 connected outlets (*Marea Terraza Restaurant*, *El Mirador Agave Bar*, *Las Rocas Beach Club*, *La Colección Boutique*) with table service, split billing, gratuity calculation, and kitchen station routing.
+- **Spa & Wellness Scheduling:** Calendar day/agenda views, therapist allocation, conflict prevention with mandatory 15-minute cleanup buffers, and seamless balance routing into POS checkout.
+- **PMS Room Folio Synchronization:** In-house guest folio posting with stable idempotency keys and error-recovery simulation.
+- **Stripe Digital Payments:** Deposit processing, simulated payment links, and automated end-of-day reconciliation audits.
+- **Mexican Fiscal Invoicing (CFDI 4.0):** SAT Anexo 20 catalog compliance, RFC validation, 16% IVA separation, and simulated timbrado certificate preview.
+- **Bilingual & Multi-Currency:** Real-time English & Mexican Spanish translation and MXN / USD price conversion.
 
 ---
 
-## Application Routes
+## 2. Five Core Demonstration Scenarios
 
-- `/` — Marketing Landing Page (Hero, Features, Visualizer, Yield ROI Calculator, Comparison, Pricing, FAQ)
-- `/dashboard` — Executive Overview (CheckinOs layout: Occupancy 87%, Revenue Curve, Platform Donut, Schedule Timeline, Tasks Checklist)
-- `/workflows` — Automated Workflow Studio & 5-Step Creation Wizard
-- `/bookings` — Multi-Channel Bookings Management Table (Full German hospitality metadata: Bestätigt, Storniert, Booked, Anreise/Abreise, Unit, Drawer)
-- `/sessions` — Browser Automation Workers, Residential Proxy Fleet, and Live DevTools Console
-- `/simulator` — Deterministic Execution Engine with 4 executable scenarios and live JSON event stream
-- `/activity` — Cryptographic Chronological Event Stream & Audit Trail
-- `/settings` — Platform Connectors (Booking.com, Airbnb, OpenTable, Stripe Vault) and Factory Reset
+1. **Scenario A — Restaurant Table Checkout & Folio Posting:**
+   - Navigate to `/app/pos` or `/app/restaurant`.
+   - Add items, apply voluntary gratuity, select table service.
+   - Choose *Guest Room Charge*, look up an in-house guest (e.g. *Sofia Alatorre, Rm 214*), confirm payment, and inspect the synchronized room folio at `/app/folios`.
+
+2. **Scenario B — Complete Spa-to-POS Guest Journey:**
+   - Start at the public booking wizard `/book-spa`.
+   - Select treatment, date, therapist, and cabin. Complete simulated 50% deposit.
+   - Open `/app/spa`, check the guest in, start treatment, complete session.
+   - Click *Charge Remaining Balance to POS* to send the outstanding amount straight to checkout.
+
+3. **Scenario C — PMS Failure & Idempotent Retry:**
+   - Open `/app/folios`.
+   - Inspect a simulated 504 Gateway Timeout posting (e.g., Room 406).
+   - Click *Retry Idempotent Posting* to verify that the system re-attempts synchronization using the same unique posting reference without creating duplicate charges.
+
+4. **Scenario D — Stripe Settlement Reconciliation:**
+   - Open `/app/payments`.
+   - Click *Run Demo Reconciliation* to audit transactions against processor records and inspect discrepancies.
+
+5. **Scenario E — Mexican Invoicing (CFDI 4.0):**
+   - Open `/app/invoicing`.
+   - Select a completed POS order or spa payment. Validate RFC and fiscal tax regime.
+   - Inspect the CFDI 4.0 document preview with explicit demonstration watermark and simulated SAT timbrado stamp.
 
 ---
 
-## Technical Stack
+## 3. Tech Stack
 
-- **Framework**: React 18 + Vite + TypeScript
-- **Styling**: Vanilla CSS Design Tokens (Strict HSL tailored palette: Forest `#0D4E43`, Mint `#10B981`, Slate `#0F172A`)
-- **State Management**: Centralized `DemoContext` with `useReducer` and `localStorage` persistence
-- **Icons**: Lucide React
-- **Hosting**: Pre-configured for Netlify (`netlify.toml` + `public/_redirects`)
+- **Framework:** React 19 + TypeScript + Vite
+- **Routing:** React Router v7 with Netlify SPA redirects
+- **Design System:** Restrained Vanilla CSS with 8pt spacing rhythm, DM Sans, Inter, and Cormorant Garamond typography
+- **Icons:** Lucide React
+- **State & Persistence:** LocalStorage-backed AppContext with deterministic demo dataset and one-click reset
 
 ---
 
-## Local Development
+## 4. Local Development
 
 ```bash
 # Install dependencies
 npm install
 
-# Start local development server
+# Start local development server (60 FPS)
 npm run dev
 
-# Run production build
+# Build for production
 npm run build
 ```
 
 ---
 
-## Netlify Deployment
+## 5. Netlify Deployment
 
-This repository is pre-configured with `netlify.toml` and `public/_redirects` to handle Single Page Application (SPA) deep linking across all routes.
+The project is pre-configured with `netlify.toml` and `public/_redirects`:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+Deploying to Netlify:
+1. Connect this GitHub repository (`https://github.com/arcthaneaidelta/Odoo-POS-SPA.git`) to Netlify.
+2. Netlify will automatically detect the build settings from `netlify.toml`:
+   - **Build Command:** `npm run build`
+   - **Publish Directory:** `dist`
+3. Click **Deploy Site**.
