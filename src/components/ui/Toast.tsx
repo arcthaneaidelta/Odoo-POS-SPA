@@ -1,48 +1,66 @@
-import React from 'react';
-import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
-import { useDemo } from '../../state/demo-store';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { CircleAlert, CircleCheck, Info, X } from 'lucide-react';
 
-export const ToastContainer: React.FC = () => {
-  const { state, dispatch } = useDemo();
-  const toast = state.toast;
+type ToastTone = 'success' | 'info' | 'error';
+interface ToastItem {
+  id: number;
+  tone: ToastTone;
+  title: string;
+  message?: string;
+}
 
-  if (!toast) return null;
+interface ToastApi {
+  toast: (t: { tone?: ToastTone; title: string; message?: string }) => void;
+}
 
-  const icons = {
-    success: <CheckCircle2 className="w-5 h-5 text-[#24483D] shrink-0" />,
-    error: <AlertCircle className="w-5 h-5 text-[#A84F4B] shrink-0" />,
-    warning: <AlertTriangle className="w-5 h-5 text-[#A87532] shrink-0" />,
-    info: <Info className="w-5 h-5 text-[#356653] shrink-0" />
-  };
+const ToastContext = createContext<ToastApi | null>(null);
 
-  const borders = {
-    success: 'border-[#C5D9C5] bg-[#FFFFFF]',
-    error: 'border-[#F5C2C0] bg-[#FFFFFF]',
-    warning: 'border-[#EDD9B8] bg-[#FFFFFF]',
-    info: 'border-[#D1E0D6] bg-[#FFFFFF]'
-  };
+const ICONS = { success: CircleCheck, info: Info, error: CircleAlert };
+
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<ToastItem[]>([]);
+  const idRef = useRef(0);
+
+  const dismiss = useCallback((id: number) => setItems((cur) => cur.filter((t) => t.id !== id)), []);
+
+  const toast = useCallback<ToastApi['toast']>(
+    ({ tone = 'success', title, message }) => {
+      const id = ++idRef.current;
+      setItems((cur) => [...cur.slice(-3), { id, tone, title, message }]);
+      window.setTimeout(() => dismiss(id), 4800);
+    },
+    [dismiss],
+  );
+
+  const api = useMemo(() => ({ toast }), [toast]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full pointer-events-auto animate-fade-in">
-      <div
-        className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg ${borders[toast.type]}`}
-        role="alert"
-      >
-        {icons[toast.type]}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#28332F]">{toast.message}</p>
-          {toast.subtitle && (
-            <p className="text-xs text-[#777F79] mt-0.5 leading-relaxed">{toast.subtitle}</p>
-          )}
-        </div>
-        <button
-          onClick={() => dispatch({ type: 'HIDE_TOAST' })}
-          className="text-[#777F79] hover:text-[#28332F] p-0.5 rounded transition-colors"
-          aria-label="Dismiss notification"
-        >
-          <X className="w-4 h-4" />
-        </button>
+    <ToastContext.Provider value={api}>
+      {children}
+      <div className="toasts" role="status" aria-live="polite" aria-atomic="false">
+        {items.map((t) => {
+          const Icon = ICONS[t.tone];
+          return (
+            <div key={t.id} className={`toast toast--${t.tone}`}>
+              <Icon size={18} aria-hidden="true" className="toast__icon" />
+              <div className="toast__text">
+                <strong>{t.title}</strong>
+                {t.message && <span>{t.message}</span>}
+              </div>
+              <button type="button" className="icon-btn icon-btn--sm" onClick={() => dismiss(t.id)} aria-label="Dismiss notification">
+                <X size={14} />
+              </button>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </ToastContext.Provider>
   );
-};
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useToast(): ToastApi {
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error('useToast must be used within ToastProvider');
+  return ctx;
+}
