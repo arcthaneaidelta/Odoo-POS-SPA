@@ -1,63 +1,64 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
-import { PortalEntryProvider, IntroLoader, ScrollManager } from './components/Transitions';
-import { PublicLayout } from './components/public/PublicLayout';
-import Landing from './pages/Landing';
-import { ContactPage, HowItWorksPage, NotFoundPage, ServicesPage } from './pages/PublicPages';
+import React, { useEffect } from 'react';
+import { useDemo } from './context/DemoContext';
+import { LoadingScreen } from './components/common/LoadingScreen';
+import { LandingPage } from './pages/LandingPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { WorkflowsPage } from './pages/WorkflowsPage';
+import { BookingsPage } from './pages/BookingsPage';
+import { SessionsPage } from './pages/SessionsPage';
+import { SimulatorPage } from './pages/SimulatorPage';
+import { ActivityPage } from './pages/ActivityPage';
+import { SettingsPage } from './pages/SettingsPage';
 
-// Portal & Admin Views
-import { PortalLayout } from './components/portal/PortalLayout';
-import Login from './pages/portal/Login';
-import Dashboard from './pages/portal/Dashboard';
-import Onboarding from './pages/portal/Onboarding';
-import Forms from './pages/portal/Forms';
-import Agreements from './pages/portal/Agreements';
-import Payments from './pages/portal/Payments';
-import Schedule from './pages/portal/Schedule';
-import Messages from './pages/portal/Messages';
-import Roadmap from './pages/portal/Roadmap';
-import Tasks from './pages/portal/Tasks';
-import Documents from './pages/portal/Documents';
-import Admin from './pages/portal/Admin';
+export const App: React.FC = () => {
+  const { state, dispatch, navigate } = useDemo();
 
-export default function App() {
-  return (
-    <PortalEntryProvider>
-      <a href="#main" className="skip-link">Skip to content</a>
-      <ScrollManager />
-      <IntroLoader />
-      <Routes>
-        {/* Public Website */}
-        <Route element={<PublicLayout />}>
-          <Route index element={<Landing />} />
-          <Route path="services" element={<ServicesPage />} />
-          <Route path="how-it-works" element={<HowItWorksPage />} />
-          <Route path="contact" element={<ContactPage />} />
-        </Route>
+  // Listen to browser navigation popstate
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path && path !== state.currentRoute) {
+        dispatch({ type: 'NAVIGATE', payload: path });
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [state.currentRoute, dispatch]);
 
-        {/* Demo Authentication */}
-        <Route path="portal/login" element={<Login />} />
+  // Update browser URL on internal navigate
+  useEffect(() => {
+    if (window.location.pathname !== state.currentRoute) {
+      window.history.pushState(null, '', state.currentRoute);
+    }
+  }, [state.currentRoute]);
 
-        {/* Client Portal Shell & Subroutes */}
-        <Route path="portal" element={<PortalLayout />}>
-          <Route index element={<Navigate to="/portal/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="onboarding" element={<Onboarding />} />
-          <Route path="forms" element={<Forms />} />
-          <Route path="agreements" element={<Agreements />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="schedule" element={<Schedule />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="roadmap" element={<Roadmap />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="documents" element={<Documents />} />
-        </Route>
+  // Render initial loading screen once per session
+  if (!state.hasSeenLoadingScreen) {
+    return <LoadingScreen onFinish={() => dispatch({ type: 'DISMISS_LOADING_SCREEN' })} />;
+  }
 
-        {/* Operations Dashboard */}
-        <Route path="admin" element={<Admin />} />
+  // Route switcher
+  const renderRoute = () => {
+    switch (state.currentRoute) {
+      case '/dashboard':
+        return <DashboardPage />;
+      case '/workflows':
+        return <WorkflowsPage />;
+      case '/bookings':
+        return <BookingsPage />;
+      case '/sessions':
+        return <SessionsPage />;
+      case '/simulator':
+        return <SimulatorPage />;
+      case '/activity':
+        return <ActivityPage />;
+      case '/settings':
+        return <SettingsPage />;
+      case '/':
+      default:
+        return <LandingPage />;
+    }
+  };
 
-        {/* 404 Catch-All */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </PortalEntryProvider>
-  );
-}
+  return <>{renderRoute()}</>;
+};
